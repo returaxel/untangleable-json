@@ -6,6 +6,8 @@
     - Path & name of exported file
 .PARAMETER BlockListURL
     - URL of selected list (.txt)
+.PARAMETER MeasureCommand
+    - Show script runtime (total seconds)
 .NOTES
     Version:        1
     Author:         returaxel
@@ -17,7 +19,8 @@
 [CmdletBinding()]
 param (
     [Parameter()][string]$OutFile = "$($ENV:OneDrive)\UntangleAbleDNSBlockList.json",
-    [Parameter()][string]$BlockListURL = "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt"
+    [Parameter()][string]$BlockListURL = "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt",
+    [parameter()][switch]$MeasureCommand = $true
 )
 
 class UntangleAbleDNSBlockList {
@@ -37,7 +40,7 @@ class UntangleAbleDNSBlockList {
     }
 }
 
-Measure-Command { # START MEASURE
+$runtime = Measure-Command { # START MEASURE
 
 $url = $BlockListURL
 $array = (Invoke-WebRequest $url).Content -Split "`n"
@@ -49,6 +52,9 @@ $array = (Invoke-WebRequest $url).Content -Split "`n"
 }
 
 } # END MEASURE
+if ($MeasureCommand) {
+    Write-Host "RunTime: $($runtime.TotalSeconds)"
+}
 
 # $untangleable | Out-GridView -Title $BlockListURL # Uncomment to show preview in Lidl-Excel
 $untangleable | ConvertTo-Json | Set-Content $OutFile
