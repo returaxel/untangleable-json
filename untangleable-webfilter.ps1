@@ -19,8 +19,8 @@
 [CmdletBinding()]
 param (
     [Parameter()][string]$OutFile = "$($ENV:OneDrive)\UntangleAbleDNSBlockList.json",
-    [Parameter()][string]$BlockListURL = "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt",
-    [parameter()][switch]$MeasureCommand = $true
+    [Parameter()][string]$BlockListURL = "https://raw.githubusercontent.com/lassekongo83/Frellwits-filter-lists/master/Frellwits-Swedish-Hosts-File.txt",
+    [parameter()][switch]$MeasureCommand
 )
 
 class UntangleAbleDNSBlockList {
