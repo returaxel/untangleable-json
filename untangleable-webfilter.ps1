@@ -1,3 +1,19 @@
+
+<#
+.DESCRIPTION
+    - Input URL of >DOMAIN< block list. Output Untangle-Importable version, or fail miserably.
+.PARAMETER OutFile
+    - Path & name of exported file
+.PARAMETER BlockListURL
+    - URL of selected list (.txt)
+.NOTES
+    Version:        1
+    Author:         returaxel
+    Creation Date:  2021-06-16 
+.EXAMPLE
+    .\untangleable-webfilter.ps1 -OutFile C:\Temp\My.json -BlockListURL "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt"
+#>
+
 [CmdletBinding()]
 param (
     [Parameter()][string]$OutFile = "$($ENV:OneDrive)\UntangleAbleDNSBlockList.json",
@@ -15,7 +31,9 @@ class UntangleAbleDNSBlockList {
 
     UntangleAbleDNSBlockList ([string]$string)
     {
-        $this.string = ($string -replace '[^\p{L}\p{Nd}\.\*\^]', '') # https://lazywinadmin.com/2015/08/powershell-remove-special-characters.html
+        # Removes special characters
+        # https://lazywinadmin.com/2015/08/powershell-remove-special-characters.html
+        $this.string = $string.TrimStart('127.0.0.1') -replace '[^\p{L}\p{Nd}\.\*\^\-]', ''
     }
 }
 
@@ -25,7 +43,7 @@ $url = $BlockListURL
 $array = (Invoke-WebRequest $url).Content -Split "`n"
 
 [psobject]$untangleable = foreach ($row in $array) {
-    if ($row -notmatch '!|@') {
+    if ($row -notmatch '!|@|#') {
         [UntangleAbleDNSBlockList]::new($row)
     }
 }
