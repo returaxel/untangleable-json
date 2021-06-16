@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param (
-    [Parameter()][string]$OutFile = "$($ENV:USERPROFILE)\Documents\UntangleAbleDNSBlockList.json",
+    [Parameter()][string]$OutFile = "$($ENV:OneDrive)\UntangleAbleDNSBlockList.json",
     [Parameter()][string]$BlockListURL = "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt"
 )
 
