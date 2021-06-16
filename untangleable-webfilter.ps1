@@ -32,5 +32,5 @@ $array = (Invoke-WebRequest $url).Content -Split "`n"
 
 } # END MEASURE
 
-$untangleable | Out-GridView 
-#$untangleable | ConvertTo-Json | Set-Content $OutFile
+# $untangleable | Out-GridView -Title $BlockListURL # Uncomment to show preview in Lidl-Excel
+$untangleable | ConvertTo-Json | Set-Content $OutFile
