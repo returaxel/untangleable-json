@@ -1,60 +1,93 @@
 
 <#
 .DESCRIPTION
-    - Input URL of >DOMAIN< block list. Output Untangle-Importable version, or fail miserably.
+    - Output Untangle WebFilter App compatible json file, or fail miserably.
+    -
+    - Regex inspiration https://lazywinadmin.com/2015/08/powershell-remove-special-characters.html
 .PARAMETER OutFile
     - Path & name of exported file
 .PARAMETER BlockListURL
     - URL of selected list (.txt)
-.PARAMETER MeasureCommand
-    - Show script runtime (total seconds)
+.PARAMETER CompareName
+    - Compare the original domains with parsed output in Grid-View. 
 .NOTES
     Version:        1
     Author:         returaxel
     Creation Date:  2021-06-16 
 .EXAMPLE
     .\untangleable-webfilter.ps1 -OutFile C:\Temp\My.json -BlockListURL "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt"
+    -
+    - The following lists were converted and uploaded successfully 2021-06-17
+        https://raw.githubusercontent.com/lassekongo83/Frellwits-filter-lists/master/Frellwits-Swedish-Hosts-File.txt
+        https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt
+        https://adaway.org/hosts.txt
 #>
 
 [CmdletBinding()]
 param (
-    [Parameter()][string]$OutFile = "$($ENV:OneDrive)\UntangleAbleDNSBlockList.json",
-    [Parameter()][string]$BlockListURL = "https://raw.githubusercontent.com/lassekongo83/Frellwits-filter-lists/master/Frellwits-Swedish-Hosts-File.txt",
-    [parameter()][switch]$MeasureCommand
+    [Parameter()][string]$OutFile = "$($ENV:OneDrive)\WebFilterRow.json",
+    [Parameter()][string]$BlockListURL = "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt",
+    [Parameter()][switch]$CompareName
+
 )
 
-class UntangleAbleDNSBlockList {
+class WebFilterRow {
+    hidden[object]$original = $null
     [object]$string = $null
     [object]$blocked = $true
     [object]$flagged = $true
     [object]$javaClass = 'com.untangle.uvm.app.GenericRule'
     [object]$markedForNew = $true
-    [object]$description = ''
+    [object]$description = $null
     [object]$markedForDelete = $false
 
-    UntangleAbleDNSBlockList ([string]$string)
+    WebFilterRow ([string]$original, [string]$string)
     {
-        # Removes special characters
-        # https://lazywinadmin.com/2015/08/powershell-remove-special-characters.html
-        $this.string = $string.TrimStart('127.0.0.1') -replace '[^\p{L}\p{Nd}\.\*\^\-]', ''
+        $this.original = $original
+        $this.string = $string
     }
+}
+
+# Removes special characters
+function RegExMagic {
+    param (
+        [Parameter()][string]$string
+    )
+    switch -regex ($string)
+    {
+        # Strip ipv4 from string
+        '^\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b' {
+            $string = $string.TrimStart([regex]::Match($string,'^\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b').Captures.Value)
+        }
+        # Strip everything BEFORE domain that is not a character or number 
+        '^[^\p{L}\p{Nd}]*' { 
+            $string = $string.TrimStart([regex]::Match($string,'^[^\p{L}\p{Nd}]*').Captures.Value) 
+        }
+        # Removes every special character except...
+        '[^\p{L}\p{Nd}\.\*\-]'{
+            $string = $string -replace '[^\p{L}\p{Nd}\.\*\-\/]', ''
+        }
+    }
+    $string
 }
 
 $runtime = Measure-Command { # START MEASURE
 
-$url = $BlockListURL
-$array = (Invoke-WebRequest $url).Content -Split "`n"
+$array = (Invoke-WebRequest $BlockListURL).Content -Split "`n"
 
-[psobject]$untangleable = foreach ($row in $array) {
-    if ($row -notmatch '!|@|#') {
-        [UntangleAbleDNSBlockList]::new($row)
+[psobject]$untangleable = foreach ($a in $array) {
+    if ($a -notmatch '!|@|#' -and $a -match '[a-z]|[0-9]') {
+        $b = RegExMagic $a
+        [WebFilterRow]::new($a,$b)
     }
 }
 
 } # END MEASURE
-if ($MeasureCommand) {
-    Write-Host "RunTime: $($runtime.TotalSeconds)"
+
+Write-Host "RunTime: $($runtime.TotalSeconds)"
+
+if ($CompareName) {
+    $untangleable | Select-Object original, string | Out-GridView -Title $BlockListURL # Uncomment to show preview in Lidl-Excel
 }
 
-# $untangleable | Out-GridView -Title $BlockListURL # Uncomment to show preview in Lidl-Excel
 $untangleable | ConvertTo-Json | Set-Content $OutFile
