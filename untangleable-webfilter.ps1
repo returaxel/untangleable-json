@@ -1,7 +1,7 @@
 
 <#
 .DESCRIPTION
-    - Output Untangle WebFilter App compatible json file, or fail miserably.
+    - Input list of domains to block -> Output Untangle WebFilter-App compatible json file, or fail miserably.
     -
     - Regex inspiration https://lazywinadmin.com/2015/08/powershell-remove-special-characters.html
 .PARAMETER OutFile
@@ -56,8 +56,8 @@ function RegExMagic {
     switch -regex ($string)
     {
         # Strip ipv4 from string
-        '^\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b' {
-            $string = $string.TrimStart([regex]::Match($string,'^\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b').Captures.Value)
+        '^.?\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b' {
+            $string = $string.TrimStart([regex]::Match($string,'^.?\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b').Captures.Value)
         }
         # Strip everything BEFORE domain that is not a character or number 
         '^[^\p{L}\p{Nd}]*' { 
