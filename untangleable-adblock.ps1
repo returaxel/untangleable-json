@@ -59,9 +59,10 @@ $BlockListArray = (Invoke-WebRequest $BlockListURL).Content -Split "`n"
 }
 
 } # End Measure
-Write-Host " - Source: $($BlockListArray.Length) rows"
-Write-Host " - UtAble: $($UntangleAble.Length) rows"
-Write-Host " - RunTime: $($RunTime.TotalSeconds)"
+Write-Output " - Source: $($BlockListArray.Length) rows"
+Write-Output " - UtAble: $($UntangleAble.Length) rows"
+Write-Output " - RunTime: $($RunTime.TotalSeconds)"
+Write-Output " - Output: $($OutFile)"
 
 # Save to file
 $UntangleAble | ConvertTo-Json | Set-Content $OutFile
