@@ -53,13 +53,15 @@ $BlockListArray = (Invoke-WebRequest $BlockListURL).Content -Split "`n"
 
 # Build Json, skip comments (!) and blanks
 [psobject]$UntangleAble = foreach ($row in $BlockListArray) {
-    if ($row -notmatch '^\!' -and $row -ne '') {
+    if ($row -notmatch '^\!|\[' -and $row -ne '') {
         [AdBlockerRow]::New($row)
     }
 }
 
 } # End Measure
-Write-Host "RunTime: $($RunTime.TotalSeconds)"
+Write-Host " - Source: $($BlockListArray.Length) rows"
+Write-Host " - UtAble: $($UntangleAble.Length) rows"
+Write-Host " - RunTime: $($RunTime.TotalSeconds)"
 
 # Save to file
 $UntangleAble | ConvertTo-Json | Set-Content $OutFile
