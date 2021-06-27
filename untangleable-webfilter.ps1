@@ -18,9 +18,9 @@
     .\untangleable-webfilter.ps1 -OutFile C:\Temp\My.json -BlockListURL "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt"
     -
     - The following lists were converted and uploaded successfully 2021-06-17
-        https://raw.githubusercontent.com/lassekongo83/Frellwits-filter-lists/master/Frellwits-Swedish-Hosts-File.txt
-        https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt
-        https://adaway.org/hosts.txt
+        - https://raw.githubusercontent.com/lassekongo83/Frellwits-filter-lists/master/Frellwits-Swedish-Hosts-File.txt
+        - https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt
+        - https://adaway.org/hosts.txt
 #>
 
 [CmdletBinding()]
@@ -43,8 +43,8 @@ class WebFilterRow {
 
     WebFilterRow ([string]$original, [string]$string)
     {
-        $this.original = $original
-        $this.string = $string
+        $this.original = $original.Trim()
+        $this.string = $string.Trim()
     }
 }
 
@@ -68,26 +68,34 @@ function RegExMagic {
             $string = $string -replace '[^\p{L}\p{Nd}\.\*\-\/]', ''
         }
     }
-    $string
+    # Is this a valid URL?
+    if ([regex]::Match($string,'^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?').Success){
+        return $string
+    }
 }
 
-$runtime = Measure-Command { # START MEASURE
+$RunTime = Measure-Command { # START MEASURE
 
-$array = (Invoke-WebRequest $BlockListURL).Content -Split "`n"
+$BlockListArray = (Invoke-WebRequest $BlockListURL).Content -Split "`n"
 
-[psobject]$untangleable = foreach ($a in $array) {
-    if ($a -notmatch '!|@|#' -and $a -match '[a-z]|[0-9]') {
-        $b = RegExMagic $a
-        [WebFilterRow]::new($a,$b)
+[psobject]$UntangleAble = foreach ($row in $BlockListArray) {
+    if ($row -notmatch '!|@|#' -and $row -match '[a-z]|[0-9]') {
+        $domain = RegExMagic $row
+        if ($null -ne $domain) {
+            [WebFilterRow]::new($row,$domain)
+        }
     }
 }
 
 } # END MEASURE
 
-Write-Host "RunTime: $($runtime.TotalSeconds)"
+Write-Output "`n - Source: $($BlockListArray.Length) rows"
+Write-Output " - Output: $($UntangleAble.Length) rows`n"
+Write-Output " - RunTime: $($RunTime.TotalSeconds) seconds`n"
+Write-Output " - FilePath: $($OutFile)`n"
 
 if ($CompareName) {
-    $untangleable | Select-Object original, string | Out-GridView -Title $BlockListURL # Uncomment to show preview in Lidl-Excel
+    $UntangleAble | Select-Object original, string | Out-GridView -Title $BlockListURL # Uncomment to show preview in Lidl-Excel
 }
 
-$untangleable | ConvertTo-Json | Set-Content $OutFile
+$UntangleAble | ConvertTo-Json | Set-Content $OutFile

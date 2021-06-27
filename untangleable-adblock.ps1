@@ -14,8 +14,9 @@
 .EXAMPLE
     .\untangleable-adblock.ps1 -OutFile C:\Temp\My.json -BlockListURL https://easylist.to/easylist/easylist.txt
     -
-    - The following lists were converted and uploaded successfully 2021-06-20
-        https://easylist.to/easylist/easylist.txt
+    - The following lists were converted and uploaded successfully 2021-06-23
+        - https://raw.githubusercontent.com/lassekongo83/Frellwits-filter-lists/master/Frellwits-Swedish-Filter.txt
+        - https://easylist.to/easylist/easylist.txt
 #>
 
 [CmdletBinding()]
