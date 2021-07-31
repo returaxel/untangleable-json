@@ -92,10 +92,10 @@ $BlockListArray = (Invoke-WebRequest $BlockListURL).Content -Split "`n"
 
 } # END MEASURE
 
-Write-Output "`n - Source: $($BlockListArray.Length) rows"
-Write-Output " - Output: $($UntangleAble.Length) rows`n"
-Write-Output " - RunTime: $($RunTime.TotalSeconds) seconds`n"
-Write-Output " - FilePath: $($OutFile)`n"
+Write-Output "`n Source: $($BlockListArray.Length) rows"
+Write-Output " Output: $($UntangleAble.Length) rows`n"
+Write-Output " RunTime: $($RunTime.TotalSeconds) seconds`n"
+Write-Output " FilePath: $($OutFile)`n"
 
 if ($CompareName) {
     $UntangleAble | Select-Object original, string | Out-GridView -Title $BlockListURL
