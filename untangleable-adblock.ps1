@@ -1,20 +1,21 @@
 
 <#
 .DESCRIPTION
-    - Input adlist to block -> Output Untangle AdBlock-App compatible json file, or fail miserably.
-    - 
+    Input adlist to block -> Output Untangle AdBlock-App compatible json file, or fail miserably.
+
 .PARAMETER OutFile
-    - Path & name of exported file
+    Path & name of exported file
+
 .PARAMETER BlockListURL
-    - URL of selected list (.txt)
+    URL of selected list (.txt)
+
 .NOTES
-    Version:        1
-    Author:         returaxel
     Creation Date:  2021-06-20
+
 .EXAMPLE
     .\untangleable-adblock.ps1 -OutFile C:\Temp\My.json -BlockListURL https://easylist.to/easylist/easylist.txt
-    -
-    - The following lists were converted and uploaded successfully 2021-06-23
+    
+    Verified lists: Converted, uploaded & hopefully blocking :)
         - https://raw.githubusercontent.com/lassekongo83/Frellwits-filter-lists/master/Frellwits-Swedish-Filter.txt
         - https://easylist.to/easylist/easylist.txt
 #>

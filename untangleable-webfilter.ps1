@@ -1,23 +1,26 @@
 
 <#
 .DESCRIPTION
-    - Input list of domains to block -> Output Untangle WebFilter-App compatible json file, or fail miserably.
-    -
-    - Regex inspiration https://lazywinadmin.com/2015/08/powershell-remove-special-characters.html
+    Input list of domains to block -> Output Untangle WebFilter-App compatible json file, or fail miserably.
+    
+    Regex inspiration https://lazywinadmin.com/2015/08/powershell-remove-special-characters.html
+
 .PARAMETER OutFile
-    - Path & name of exported file
+    Path & name of exported file
+
 .PARAMETER BlockListURL
-    - URL of selected list (.txt)
+    URL of selected list (.txt)
+
 .PARAMETER CompareName
-    - Compare the original domains with parsed output in Grid-View. 
+    Compare the original domains with parsed output in Grid-View. Useful for finding errors.
+
 .NOTES
-    Version:        1
-    Author:         returaxel
     Creation Date:  2021-06-16 
+
 .EXAMPLE
     .\untangleable-webfilter.ps1 -OutFile C:\Temp\My.json -BlockListURL "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt"
-    -
-    - The following lists were converted and uploaded successfully 2021-06-17
+    
+    Verified lists: Converted, uploaded & blocking(?)
         - https://raw.githubusercontent.com/lassekongo83/Frellwits-filter-lists/master/Frellwits-Swedish-Hosts-File.txt
         - https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt
         - https://adaway.org/hosts.txt
