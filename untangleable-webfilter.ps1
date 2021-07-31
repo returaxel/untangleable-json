@@ -20,7 +20,7 @@
 .EXAMPLE
     .\untangleable-webfilter.ps1 -OutFile C:\Temp\My.json -BlockListURL "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt"
     
-    Verified lists: Converted, uploaded & blocking(?)
+    Verified lists: Converted, uploaded & hopefully blocking :)
         - https://raw.githubusercontent.com/lassekongo83/Frellwits-filter-lists/master/Frellwits-Swedish-Hosts-File.txt
         - https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt
         - https://adaway.org/hosts.txt
@@ -58,20 +58,20 @@ function RegExMagic {
     )
     switch -regex ($string)
     {
-        # Strip ipv4 from string
+        # TrimStart of IPv4 addresses
         '^.?\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b' {
             $string = $string.TrimStart([regex]::Match($string,'^.?\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b').Captures.Value)
         }
-        # Strip everything BEFORE domain that is not a character or number 
+        # TrimStart of special characters 
         '^[^\p{L}\p{Nd}]*' { 
             $string = $string.TrimStart([regex]::Match($string,'^[^\p{L}\p{Nd}]*').Captures.Value) 
         }
-        # Removes every special character except...
+        # Remove every special character from string except \.\*\-\/
         '[^\p{L}\p{Nd}\.\*\-]'{
             $string = $string -replace '[^\p{L}\p{Nd}\.\*\-\/]', ''
         }
     }
-    # Is this a valid URL?
+    # Validate URL
     if ([regex]::Match($string,'^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?').Success){
         return $string
     }
@@ -98,7 +98,7 @@ Write-Output " - RunTime: $($RunTime.TotalSeconds) seconds`n"
 Write-Output " - FilePath: $($OutFile)`n"
 
 if ($CompareName) {
-    $UntangleAble | Select-Object original, string | Out-GridView -Title $BlockListURL # Uncomment to show preview in Lidl-Excel
+    $UntangleAble | Select-Object original, string | Out-GridView -Title $BlockListURL
 }
 
 $UntangleAble | ConvertTo-Json | Set-Content $OutFile
