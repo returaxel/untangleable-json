@@ -37,9 +37,9 @@ oasc-eu1.247åäö=)"("realmedia.com
 c4nw3.prse.this.com
 abc..domain..too.many.dots.com
 ||10.10.34.35^ a.domain.here
-10.10.0.1 tes"¤"¤t."#.#com^^^^
+10.10.0.1 tes"¤"¤t.".com^^^^
 abc_-?facebook.com
-10.10.0.1 tes"¤"¤t.".com^^^^alfabet.se
-really.l!ong.do*main.?may.contain.weird.chara:)ters
+10.10.0.1 tes"x"xt.".com^^^^alfabet.se
+really.long.do*main.?may.contain.weird.chara:)ters
 severeweatheralerts02.severeweatheralerts.net
 severeweatheralerts02.severeweatheralerts00.severeweatheralerts.net
