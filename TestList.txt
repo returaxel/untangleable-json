@@ -1,0 +1,45 @@
+## FireBog
+## https://v.firebog.net/hosts/static/w3kbl.txt
+yt.moatads.com
+us.intellitxt.com
+evolveplatform.net
+dashboard.evolveplatform.net
+www-googletagmanager.l.google.com
+adservice.google.com.au
+a1.adstore.jp
+ad.fyber.angsrvr.com
+
+# Homepage: https://github.com/ph00lt0/blocklists
+# Description: Blocklist for Stats and any analytics, lottery, bug trackers, ads, data brokers, font content delivery networks and consent management
+0.0.0.0 statistiek.rijksoverheid.nl
+0.0.0.0 rtcstats-server.jitsi.net
+0.0.0.0 privatestats.whatsapp.net
+0.0.0.0 crashlogs.whatsapp.net
+0.0.0.0 statslogger.rocket.persgroep.cloud
+
+! Title: AdGuard DNS filter
+! https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt
+||truthfulsensor.com^
+||groopsie.net^
+||tonganserried.life^
+||flvpcdnb.com^
+||cndeccsqtmjyh.com^
+||wknaczrxjrj.com^
+
+! Fucked up domains for testing
+                    ad9.emediate.dk ^
+e1.emediate.se"¤
+matchthis.fqdn
+emediate.match.com
+mediaserve*1r.zzzzzz*ates.com*.cdn.clo1udflare.net
+1.1nordicfondue.abc
+oasc-eu1.247åäö=)"(#"realmedia.com
+c4nw3.p@rse.this.com
+abc..domain..too.many.dots.com
+||10.10.34.35^ a.domain.here
+10.10.0.1 tes"¤"¤t."#.#com^^^^
+abc_-?facebook.com
+10.10.0.1 tes"¤"¤t."#.#com^^^^alfabet.se
+really.l!ong.do*main.?may.contain.weird.chara:)ters
+severeweatheralerts02.severeweatheralerts.net
+severeweatheralerts02.severeweatheralerts00.severeweatheralerts.net
