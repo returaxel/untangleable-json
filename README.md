@@ -11,8 +11,8 @@ As has been discussed on the Untangle forums, loading the webfilter app full of 
 
 ## Untangle syntax
 
-* https://wiki.edge.arista.com/index.php/URL_Matcher
-* https://wiki.edge.arista.com/index.php/Glob_Matcher
+* https://wiki.edge.arista.com/index.php/URL_Matcher  
+* https://wiki.edge.arista.com/index.php/Glob_Matcher  
 
 *The left side of the rule is anchored with the regular expression "^([a-zA-Z_0-9-]*\.)*". "foo.com" will match only "foo.com" and "abc.foo.com" but not "afoo.com"*  
 
