@@ -1,104 +1,114 @@
-
 <#
 .DESCRIPTION
-    Input list of domains to block -> Output Untangle WebFilter-App compatible json file, or fail miserably.
-    
-    Regex inspiration https://lazywinadmin.com/2015/08/powershell-remove-special-characters.html
+    Input BlockListURL > Output > Untangle WebFilter-App compatible json file, or fail miserably.
 
-.PARAMETER OutFile
-    Path & name of exported file
+.PARAMETER FilePath
+    Where to save the .json
 
 .PARAMETER BlockListURL
-    URL of selected list (.txt)
+    A list of domains to block
 
-.PARAMETER CompareName
-    Compare the original domains with parsed output in Grid-View. Useful for finding errors.
+.PARAMETER OutFile
+    Save as .json 
 
 .NOTES
-    Creation Date:  2021-06-16 
+    Author: returaxel
+    Updated: rewritten because regex is hard to comprehend, faster and perhaps smarter than before
+
+    Possibly better but does not match domains that end with a space followed by a character (42 matches, 6223 steps)
+    (?=\b(\.?[\w\-\*]*+)([\w\.\-\*]*)(\.{1}[\w\-\*]+?\b))(?:\S*\s?)$
 
 .EXAMPLE
-    .\untangleable-webfilter.ps1 -OutFile C:\Temp\My.json -BlockListURL "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt"
+    View output
+        .\untangleable-webfilter.ps1 -BlockListURL 'https://raw.githubusercontent.com/returaxel/untangleable-json/main/TestList.txt' | Out-GridView
     
-    Verified lists: Converted, uploaded & hopefully blocking :)
-        - https://raw.githubusercontent.com/lassekongo83/Frellwits-filter-lists/master/Frellwits-Swedish-Hosts-File.txt
-        - https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt
-        - https://adaway.org/hosts.txt
+    Save as json
+        .\untangleable-webfilter.ps1 -BlockListURL 'https://raw.githubusercontent.com/returaxel/untangleable-json/main/TestList.txt' -OutFile
+
 #>
 
-[CmdletBinding()]
 param (
-    [Parameter()][string]$OutFile = "$($ENV:OneDrive)\WebFilter.json",
-    [Parameter()][string]$BlockListURL = "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt",
-    [Parameter()][switch]$CompareName
-
+    [Parameter()][string]$BlockListURL,
+    [Parameter()][string]$FilePath = "$($ENV:OneDrive)\WebFilter.json",
+    [Parameter()][switch]$OutFile
 )
 
-class WebFilterRow {
-    hidden[object]$original = $null
-    [object]$string = $null
-    [object]$blocked = $true
-    [object]$flagged = $true
-    [object]$javaClass = 'com.untangle.uvm.app.GenericRule'
-    [object]$markedForNew = $true
-    [object]$description = $null
-    [object]$markedForDelete = $false
-
-    WebFilterRow ([string]$original, [string]$string)
-    {
-        $this.original = $original.Trim()
-        $this.string = $string.Trim()
-    }
-}
-
-# Removes special characters
-function RegExMagic {
+function RegexMagic {
     param (
-        [Parameter()][string]$string
-    )
-    switch -regex ($string)
-    {
-        # TrimStart of IPv4 addresses
-        '^.?\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b' {
-            $string = $string.TrimStart([regex]::Match($string,'^.?\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b').Captures.Value)
+        [Parameter()][array]$BlockList,
+        # 46 matches, 10698 steps, matches domains that end with a space and space followed by a character
+        [Parameter()][string]$Regex = '(?=\b([\w\-\*]*)(\b[\w\.\-\*]*)(\.{1}[\w\.\-\*]+))(?:\S*\s*?\W*?)$' 
+    ) 
+
+    $BlockList | ForEach-Object {
+
+        # Skip if empty or contain the following characters 
+        if (![string]::IsNullOrWhiteSpace($_) -and ($_ -notmatch '!|@|#')) {
+
+            # Make object for output
+            $RegexMagic = [PSCustomObject]@{
+                # Information
+                URL = $_
+                SUB = $null
+                SLD = $null
+                TLD = $null
+                FullMatch = $null
+                WellFormed = $null
+                # Ruleset
+                string = $null
+                blocked = $true
+                flagged = $true
+                javaClass = 'com.untangle.uvm.app.GenericRule'
+                markedForNew = $true
+                description = $null
+                markedForDelete = $false
+            }    
+    
+            $RegexMatch = [regex]::Matches($_, $Regex)
+
+            try {
+                $RegexMagic.SUB = $RegexMatch.Groups[1].Value # Sub domain
+                $RegexMagic.SLD = $RegexMatch.Groups[2].Value # Second level domain
+                $RegexMagic.TLD = $RegexMatch.Groups[3].Value # Top level domain, everything after the second dot
+                $RegexMagic.FullMatch = '{0}{1}{2}' -f $RegexMatch.Groups[1],$RegexMatch.Groups[2],$RegexMatch.Groups[3]
+            }
+            catch {
+                Write-Host $RegexMagic.URL
+            }
+
+            $RegexMagic.WellFormed = [Uri]::IsWellFormedUriString($RegexMagic.FullMatch, 'Relative')
+            
+            if (![string]::IsNullOrEmpty($RegexMagic.FullMatch) -and ($RegexMagic.WellFormed)) {
+                $RegexMagic.string = $RegexMagic.FullMatch
+                return $RegexMagic
+            }
+
+        }         
+        else {
+            # Uncomment to show skipped entries, slightly slower
+            # Write-Host $_ -ForegroundColor DarkGray
         }
-        # TrimStart of special characters 
-        '^[^\p{L}\p{Nd}]*' { 
-            $string = $string.TrimStart([regex]::Match($string,'^[^\p{L}\p{Nd}]*').Captures.Value) 
-        }
-        # Remove every special character from string except \.\*\-\/
-        '[^\p{L}\p{Nd}\.\*\-]'{
-            $string = $string -replace '[^\p{L}\p{Nd}\.\*\-\/]', ''
-        }
+
     }
-    # Validate URL
-    if ([regex]::Match($string,'^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?').Success){
-        return $string
-    }
+
 }
 
 $RunTime = Measure-Command { # START MEASURE
+    
+[array] $BlockList = (Invoke-WebRequest $BlockListURL -UseBasicParsing).Content -split '\r?\n'
 
-$BlockListArray = (Invoke-WebRequest $BlockListURL).Content -Split "`n"
-
-[psobject]$UntangleAble = foreach ($row in $BlockListArray) {
-    if ($row -notmatch '!|@|#' -and $row -match '[a-z]|[0-9]') {
-        $domain = RegExMagic $row
-        if ($null -ne $domain) {
-            [WebFilterRow]::new($row,$domain)
-        }
-    }
-}
+$RegexMagic = RegexMagic -BlockList $BlockList
 
 } # END MEASURE
 
-Write-Output "`n Source: $($BlockListArray.Length) rows"
-Write-Output " Output: $($UntangleAble.Length) rows`n"
-Write-Output " RunTime: $($RunTime.TotalSeconds) seconds`n"
-Write-Output " FilePath: $($OutFile)`n"
-
-if ($CompareName) {
-    $UntangleAble | Select-Object original, string | Out-GridView -Title $BlockListURL
+if ($OutFile) {
+    $RegexMagic | Select-Object string, blocked, flagged, javaclass, markedfornew, description, markedfordelete | ConvertTo-Json | Set-Content $FilePath
 }
 
-$UntangleAble | ConvertTo-Json | Set-Content $OutFile
+# What's sent to the pipeline
+$RegexMagic | Select-Object URL, SUB, SLD, TLD, FullMatch, WellFormed
+
+Write-Host "`n Source: $($BlockList.Length) entries"
+Write-Host " Output: $($RegexMagic.Length) entries"
+Write-Host " RunTime: $($RunTime.TotalSeconds) seconds"
+Write-Host " FilePath: $($FilePath)`n"
