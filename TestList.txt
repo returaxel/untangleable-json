@@ -26,9 +26,9 @@
 
 ! EndsWith things we don't need
 sld.space 
-sld.spaceat @
+sld.spaceat %
 sub.sld.space 
-sub.sld.spaceat @
+sub.sld.spaceat %
 sub.sld.tldÅÄÖ
 
 ! Completely broken
