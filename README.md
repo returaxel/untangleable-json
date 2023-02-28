@@ -2,15 +2,16 @@
 
 Creates Untangle compatible .json for the webfilter and adblocker app, or fails miserably.
 
-#### Why?  
+#### Why?
+
 This is first and foremost a way for me to learn more about regex in a fun way.  
 
+#### Should you use it?
 
-
-Should you use it?
-As discussed on the Untangle forums, loading the webfilter app full of domains is stupid. 
+As discussed on the Untangle forums, loading the webfilter app full of domains is stupid.  
 
 Using blocklists with repeated domains is also stupid. The following could be a single entry.  
+
 ```
 ad1.weserveads.tld
 ad2.weserveads.tld
