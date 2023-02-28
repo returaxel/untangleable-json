@@ -2,11 +2,10 @@
 
 Creates Untangle compatible .json for the webfilter and adblocker app, or fails miserably.
 
-Why?
+#### Why?  
 This is first and foremost a way for me to learn more about regex in a fun way.  
 
-Work in progress, maybe never:
-* Find similar subdomains and make a single entry out of them  
+
 
 Should you use it?
 As discussed on the Untangle forums, loading the webfilter app full of domains is stupid. 
@@ -16,6 +15,10 @@ Using blocklists with repeated domains is also stupid. The following could be a 
 ad1.weserveads.tld
 ad2.weserveads.tld
 ```
+
+#### Work in progress(?)
+
+* Find similar subdomains and make a single entry out of them  
 
 ## Untangle syntax
 
