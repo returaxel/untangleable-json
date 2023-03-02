@@ -1,59 +1,40 @@
-! Collection of different blocklist formats
 -.domain.com
 127.0.0.1 sld.tld
 127.0.0.1 sub.sld.tld
 127.0.0.1 1-sub.-1-sld.tld
 127.0.0.1 .sub.1--1-sld.tld
 
-0.0.0.0 sld.tld
+0.0.0.01 sld.tld
 0.0.0.0 sub.sld.tld
 0.0.0.0 -sub.sld.tld
 0.0.0.0 *sub.sld.tld
 0.0.0.0  sub.sld.tld
+1.1.1.1 sld.tld
+1.1.1 sld.tld
+1.1 .sld.tld
+1.tld.sld
 
-||sub.1--1-sld.tld^
+||sub.sld.tld^
 ||sld.tld^
 
 ||sld.tld^$doc
 ||sub.sld.tld^$doc
 
-!! Extended test with broken strings
-! StartsWith things we don't need
  space.sld.tld
 -dash.sld.tld
 .dot.sld.tld
 *wildcard.sld.tld
 
-! EndsWith things we don't need
-sld.space 
-sld.spaceat %
+sld.space     
+sld.spaceat@     
 sub.sld.space 
-sub.sld.spaceat %
+sub.sld.spaceat @
 sub.sld.tldÅÄÖ
 
-! Completely broken
-oasc-eu1.247åäö=)" isthis.something.that.can.match (" 1-1.sub.sld.tld 
-c4nw3.prse.this.com
-abc..domain.....many.dots.com
-||10.10.34.35^ a.domain.here
-10.10.0.1 tes"¤"¤t."match.this.part^^^^
-abc_-?facebook.com.blehrg
-10.10.0.1 tes"x"xt.".com^^^^alfabet.se
-really.long.do*main.?may.contain.weird.chara:)ters
-
-! Not working
-! Should be separated as SLD and TLD by the dot
-1--1-sld.tld
-
-! Dont need these
-||sld.
 ||sld.tld ^
 ||unagi*.amazon.
-
-! Hard to catch collection
 ||putrr*.com^
 ||hostingcloud.*.wasm^
-/(https?:\/\/)213\.32\.115\..{100,}/
 ||adx-*.dbankcloud.
 ||parkdomainreal*.site^
 ||unagi*.amazon.
@@ -64,3 +45,6 @@ really.long.do*main.?may.contain.weird.chara:)ters
 ://sportframe*.co ^
 ||basvformu*.xyz^
 ||sax*.sina.
+
+/(https?:\/\/)213\.32\.115\..{100,}/
+||sld.
