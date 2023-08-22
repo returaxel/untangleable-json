@@ -1,22 +1,27 @@
 <#
 .DESCRIPTION
-    Input BlockListURL > Output > Untangle WebFilter-App compatible json file, or fail miserably.
+    --------- DISCLAIMER ---------
+            Might not work.
+    -------------------------------
+    Input BlockListURL > Output > Untangle WebFilter-App compatible json file (or fail miserably)
+    Use pipeline to get prettier output. See examples.
 
 .PARAMETER FilePath
     Where to save the .json
 
 .PARAMETER BlockListURL
     A list of domains to block
+    
+.PARAMETER ShowAll
+    View skipped entries in terminal
 
 .PARAMETER OutFile
-    Save as .json 
+    Save as .json
 
 .NOTES
     Author: returaxel
-    Updated: rewritten because regex is hard to comprehend, faster and perhaps smarter than before
-
-    Possibly better but does not match domains that end with a space followed by a character (42 matches, 6223 steps)
-    (?=\b(\.?[\w\-\*]*+)([\w\.\-\*]*)(\.{1}[\w\-\*]+?\b))(?:\S*\s?)$
+    Updated: New regex, that actually does what I want. 
+        3 capture groups; SUB, SLD, TLD. Second-Level should hold everything except SUB and Top-Level.
 
 .EXAMPLE
     View output
@@ -30,14 +35,15 @@
 param (
     [Parameter()][string]$BlockListURL,
     [Parameter()][string]$FilePath = "$($ENV:OneDrive)\WebFilter.json",
+    [Parameter()][switch]$ShowAll,
     [Parameter()][switch]$OutFile
 )
 
 function RegexMagic {
     param (
         [Parameter()][array]$BlockList,
-        # 46 matches, 10698 steps, matches domains that end with a space and space followed by a character
-        [Parameter()][string]$Regex = '(?=\b([\w\-\*]*)(\b[\w\.\-\*]*)(\.{1}[\w\.\-\*]+))(?:\S*\s*?\W*?)$' 
+        # TestList: 41/41 matches, 2109 steps
+        [Parameter()][string]$Regex = '^(?:[^\w*-]*(?:\d+(?:\.\d+)+[^\w*-]+)?)([\w\-\*]+)(\.?[\w\.\-\*]*)(\.[\w\.\-\*]+)' 
     ) 
 
     $BlockList | ForEach-Object {
@@ -68,13 +74,13 @@ function RegexMagic {
 
             try {
                 $RegexMagic.SUB = $RegexMatch.Groups[1].Value # Sub domain
-                $RegexMagic.SLD = $RegexMatch.Groups[2].Value # Second level domain
-                $RegexMagic.TLD = $RegexMatch.Groups[3].Value # Top level domain, everything after the second dot
+                $RegexMagic.SLD = $RegexMatch.Groups[2].Value # Second level domain 
+                $RegexMagic.TLD = $RegexMatch.Groups[3].Value # Top level domain, everything after the last punctuation
                 $RegexMagic.FullMatch = '{0}{1}{2}' -f $RegexMatch.Groups[1],$RegexMatch.Groups[2],$RegexMatch.Groups[3]
             }
             catch {
-                Write-Host $RegexMagic.URL
-            }
+                Write-Host $RegexMagic.URL -ForegroundColor DarkYellow
+            } 
 
             $RegexMagic.WellFormed = [Uri]::IsWellFormedUriString($RegexMagic.FullMatch, 'Relative')
             
@@ -82,11 +88,9 @@ function RegexMagic {
                 $RegexMagic.string = $RegexMagic.FullMatch
                 return $RegexMagic
             }
-
         }         
-        else {
-            # Uncomment to show skipped entries, slightly slower
-            # Write-Host $_ -ForegroundColor DarkGray
+        elseif ($ShowAll) {
+            Write-Host $_ -ForegroundColor DarkGray
         }
 
     }
@@ -94,7 +98,8 @@ function RegexMagic {
 }
 
 $RunTime = Measure-Command { # START MEASURE
-    
+
+# Iterate list: might need tweaking depending on format
 [array] $BlockList = (Invoke-WebRequest $BlockListURL -UseBasicParsing).Content -split '\r?\n'
 
 $RegexMagic = RegexMagic -BlockList $BlockList
@@ -105,9 +110,9 @@ if ($OutFile) {
     $RegexMagic | Select-Object string, blocked, flagged, javaclass, markedfornew, description, markedfordelete | ConvertTo-Json | Set-Content $FilePath
 }
 
-# What's sent to the pipeline
-$RegexMagic | Select-Object URL, SUB, SLD, TLD, FullMatch, WellFormed
+$RegexMagic | Select-Object URL, SUB, SLD, TLD, FullMatch, WellFormed 
 
+Write-Host "`n"
 Write-Host "`n Source: $($BlockList.Length) entries"
 Write-Host " Output: $($RegexMagic.Length) entries"
 Write-Host " RunTime: $($RunTime.TotalSeconds) seconds"
