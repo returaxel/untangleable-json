@@ -107,7 +107,7 @@ function RegexMagic {
 $RunTime = Measure-Command { # START MEASURE
 
 # Iterate list: might need tweaking depending on format
-[array] $BlockList = [System.Collections.Generic.List[string]] (Invoke-WebRequest $BlockListURL -UseBasicParsing).Content -split '\r?\n'
+[array] $BlockList = (Invoke-WebRequest $BlockListURL -UseBasicParsing).Content -split '\r?\n'
 
 $RegexMagic = RegexMagic -BlockList $BlockList
 
