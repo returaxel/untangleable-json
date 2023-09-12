@@ -61,23 +61,35 @@ function RegexMagic {
                 try {
 
                     $Key = if ([string]::IsNullOrEmpty($RegexMatch.Groups[2])) {
+
                         '{0}{1}' -f $RegexMatch.Groups[1],$RegexMatch.Groups[3]
-                    } else {
+                
+                    } 
+                    else {
+
                         '{0}{1}' -f $RegexMatch.Groups[2],$RegexMatch.Groups[3]
+
                     }
 
-                    if ($key -in $OutHash.Keys) {
-                        $OutHash[$Key].SUB.Add($RegexMatch.Groups[1], $null)
-                    }
+                    if ($Key -in $OutHash.Keys) {
+                        try {
+                            $OutHash[$Key].SUB.Add($RegexMatch.Groups[1], $null)
+                        }
+                        catch {
+                            Write-Host "HashTable.Add()_Flip: $($OutHash[$Key])" -ForegroundColor DarkYellow
+                        }
 
-                    $OutHash.$key = [pscustomobject]@{
-                        # Information
-                        URL = $_
-                        SUB = @($RegexMatch.Groups[1].Value, $null) # Sub domain(s)
-                        SLD = $RegexMatch.Groups[2].Value # Second level domain 
-                        TLD = $RegexMatch.Groups[3].Value # Top level domain, everything after the last punctuation
-                        FullMatch = '{0}{1}{2}' -f $RegexMatch.Groups[1],$RegexMatch.Groups[2],$RegexMatch.Groups[3]
-                        WellFormed = [Uri]::IsWellFormedUriString($RegexMagic.FullMatch, 'Relative')
+                    } 
+                    else {
+                        $OutHash.$key = [pscustomobject]@{
+                            # Information
+                            URL = $_
+                            SUB = @{$RegexMatch.Groups[1].Value = $null} # Sub domain(s)
+                            SLD = $RegexMatch.Groups[2].Value # Second level domain 
+                            TLD = $RegexMatch.Groups[3].Value # Top level domain, everything after the last punctuation
+                            FullMatch = '{0}{1}{2}' -f $RegexMatch.Groups[1],$RegexMatch.Groups[2],$RegexMatch.Groups[3]
+                            WellFormed = [Uri]::IsWellFormedUriString($RegexMagic.FullMatch, 'Relative')
+                        }
                     }
 
                 }

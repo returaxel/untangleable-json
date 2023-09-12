@@ -120,7 +120,7 @@ if ($OutFile) {
 $RegexMagic | Select-Object URL, SUB, SLD, TLD, FullMatch, WellFormed 
 
 Write-Host "`n"
-Write-Host "`n Source: $($BlockList.Length) entries"
+Write-Host "`n Source: $($BlockList.Length) entries (including comments)"
 Write-Host " Output: $($RegexMagic.Length) entries"
 Write-Host " RunTime: $($RunTime.TotalSeconds) seconds"
 if ($OutFile) {
