@@ -45,53 +45,45 @@ function RegexMagic {
         [Parameter()][string]$Regex = '(?:^[\w]*\ )?(\b[\w\-\*]+)(\.?[\w\.\-\*]*)(\.[\w\.\-\*]+(?:[\W]*?$))'
     ) 
 
+    # HashTable TEST
+    $OutHash = [ordered]@{}
+
+    # Iterate Blocklist, add to HashTable
     $BlockList | ForEach-Object {
 
         # Skip blocklist comments, edit regex as needed
         if (![string]::IsNullOrWhiteSpace($_) -and ($_ -notmatch '!|@|#')) {
-
-            # Make object for output
-            $RegexMagic = [PSCustomObject]@{
-                # Information
-                URL = $_
-                SUB = $null
-                SLD = $null
-                TLD = $null
-                FullMatch = $null
-                WellFormed = $null
-                # Ruleset
-                string = $null
-                blocked = $true
-                flagged = $true
-                javaClass = 'com.untangle.uvm.app.GenericRule'
-                markedForNew = $true
-                description = $null
-                markedForDelete = $false
-            }    
     
             $RegexMatch = [regex]::Matches($_, $Regex)
 
             if (-not[string]::IsNullOrEmpty($RegexMatch)) {
 
                 try {
-                    $RegexMagic.SUB = $RegexMatch.Groups[1].Value # Sub domain
-                    $RegexMagic.SLD = $RegexMatch.Groups[2].Value # Second level domain 
-                    $RegexMagic.TLD = $RegexMatch.Groups[3].Value # Top level domain, everything after the last punctuation
-                    $RegexMagic.FullMatch = '{0}{1}{2}' -f $RegexMatch.Groups[1],$RegexMatch.Groups[2],$RegexMatch.Groups[3]
+
+                    $Key = if ([string]::IsNullOrEmpty($RegexMatch.Groups[2])) {
+                        '{0}{1}' -f $RegexMatch.Groups[1],$RegexMatch.Groups[3]
+                    } else {
+                        '{0}{1}' -f $RegexMatch.Groups[2],$RegexMatch.Groups[3]
+                    }
+
+                    if ($key -in $OutHash.Keys) {
+                        $OutHash[$Key].SUB.Add($RegexMatch.Groups[1], $null)
+                    }
+
+                    $OutHash.$key = [pscustomobject]@{
+                        # Information
+                        URL = $_
+                        SUB = @($RegexMatch.Groups[1].Value, $null) # Sub domain(s)
+                        SLD = $RegexMatch.Groups[2].Value # Second level domain 
+                        TLD = $RegexMatch.Groups[3].Value # Top level domain, everything after the last punctuation
+                        FullMatch = '{0}{1}{2}' -f $RegexMatch.Groups[1],$RegexMatch.Groups[2],$RegexMatch.Groups[3]
+                        WellFormed = [Uri]::IsWellFormedUriString($RegexMagic.FullMatch, 'Relative')
+                    }
+
                 }
                 catch {
-                    Write-Host $RegexMagic.URL -ForegroundColor DarkYellow
-                } 
-
-                $RegexMagic.WellFormed = [Uri]::IsWellFormedUriString($RegexMagic.FullMatch, 'Relative')
-                
-                if ($OutFile) {
-                    if (![string]::IsNullOrEmpty($RegexMagic.FullMatch) -and ($RegexMagic.WellFormed)) {
-                        $RegexMagic.string = $RegexMagic.FullMatch
-                    }
+                    Write-Host 'HashTable_Flip' -ForegroundColor DarkYellow
                 }
-
-                return $RegexMagic
 
             }
 
@@ -101,6 +93,7 @@ function RegexMagic {
         }
 
     }
+    return $OutHash 
 
 }
 
@@ -113,16 +106,9 @@ $RegexMagic = RegexMagic -BlockList $BlockList
 
 } # END MEASURE
 
-if ($OutFile) {
-    $RegexMagic | Select-Object string, blocked, flagged, javaclass, markedfornew, description, markedfordelete | ConvertTo-Json | Set-Content $FilePath
-}
-
-$RegexMagic | Select-Object URL, SUB, SLD, TLD, FullMatch, WellFormed 
+$RegexMagic
 
 Write-Host "`n"
-Write-Host "`n Source: $($BlockList.Length) entries"
-Write-Host " Output: $($RegexMagic.Length) entries"
+Write-Host "`n Source: $($BlockList.Length) entries (including comments)"
+Write-Host " Output: $($RegexMagic.keys.count) entries"
 Write-Host " RunTime: $($RunTime.TotalSeconds) seconds"
-if ($OutFile) {
-    Write-Host " FilePath: $($FilePath)`n"
-}
