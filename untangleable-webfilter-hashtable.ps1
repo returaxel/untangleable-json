@@ -3,40 +3,28 @@
     --------- DISCLAIMER ---------
             Might not work.
     -------------------------------
-    Input BlockListURL > Output > Untangle WebFilter-App compatible json file (or fail miserably)
-    Use pipeline to get prettier output. See examples.
-
-.PARAMETER FilePath
-    Where to save the .json
+    Learning new things - terribly ineffective - don't use this
 
 .PARAMETER BlockListURL
     A list of domains to block
     
-.PARAMETER ShowAll
+.PARAMETER OutSkipped
     View skipped entries in terminal
-
-.PARAMETER OutFile
-    Save as .json
 
 .NOTES
     Author: returaxel
-    Updated: New regex, that actually does what I want. 
+    Updated: Trying hashtable things.
         3 capture groups; SUB, SLD, TLD. Second-Level should hold everything except SUB and Top-Level.
 
 .EXAMPLE
-    View output
-        .\untangleable-webfilter.ps1 -BlockListURL 'https://raw.githubusercontent.com/returaxel/untangleable-json/main/TestList.txt' | Out-GridView
+    Might want to output into a variable
+        $EatTheOutput = .\untangleable-webfilter.ps1 -BlockListURL 'https://raw.githubusercontent.com/returaxel/untangleable-json/main/TestList.txt' 
     
-    Save as json
-        .\untangleable-webfilter.ps1 -BlockListURL 'https://raw.githubusercontent.com/returaxel/untangleable-json/main/TestList.txt' -OutFile
-
 #>
 
 param (
     [Parameter()][string]$BlockListURL,
-    [Parameter()][string]$FilePath = "$($ENV:OneDrive)\WebFilter.json",
-    [Parameter()][switch]$OutSkipped,
-    [Parameter()][switch]$OutFile
+    [Parameter()][switch]$OutSkipped
 )
 
 function RegexMagic {
@@ -71,7 +59,7 @@ function RegexMagic {
 
                     }
 
-                    if ($Key -in $OutHash.Keys) {
+                    if ($OutHash[$Key] -as [bool]) {
                         try {
                             $OutHash[$Key].SUB.Add($RegexMatch.Groups[1], $null)
                         }
@@ -81,7 +69,7 @@ function RegexMagic {
 
                     } 
                     else {
-                        $OutHash.$key = [pscustomobject]@{
+                        $OutHash.$Key = [pscustomobject]@{
                             # Information
                             URL = $_
                             SUB = @{$RegexMatch.Groups[1].Value = $null} # Sub domain(s)
